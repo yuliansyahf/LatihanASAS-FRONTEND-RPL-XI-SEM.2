@@ -1,0 +1,1404 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz Latihan — Frontend & AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f4f3ef;
+    --surface: #ffffff;
+    --surface2: #f0ede8;
+    --border: #e2ddd6;
+    --text: #1a1816;
+    --text-muted: #7a7267;
+    --accent: #2563eb;
+    --accent-light: #eff4ff;
+    --correct: #16a34a;
+    --correct-light: #f0fdf4;
+    --wrong: #dc2626;
+    --wrong-light: #fef2f2;
+    --warn: #d97706;
+    --warn-light: #fffbeb;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 8px 24px rgba(0,0,0,0.06);
+    --shadow-lg: 0 2px 8px rgba(0,0,0,0.08), 0 16px 48px rgba(0,0,0,0.1);
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .header-icon {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    background: var(--accent-light);
+    border: 2px solid #c7d7fc;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+  .header-info { flex: 1; min-width: 0; }
+  .header-title { font-size: 15px; font-weight: 800; color: var(--text); letter-spacing: -0.01em; }
+  .header-subtitle { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+  .header-badge {
+    background: var(--accent-light); color: var(--accent);
+    font-size: 11px; font-weight: 700;
+    padding: 4px 10px; border-radius: 20px; letter-spacing: 0.02em;
+    flex-shrink: 0;
+  }
+
+  /* MAIN */
+  .main { max-width: 900px; margin: 0 auto; padding: 28px 20px 80px; }
+
+  /* SCREEN TITLE */
+  .screen-title { font-size: 26px; font-weight: 800; color: var(--text); letter-spacing: -0.03em; margin-bottom: 5px; }
+  .screen-desc { font-size: 14px; color: var(--text-muted); margin-bottom: 24px; font-weight: 500; }
+
+  /* CATEGORIES GRID */
+  .categories-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .cat-card {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    position: relative;
+    overflow: hidden;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .cat-card:hover { border-color: var(--accent); box-shadow: var(--shadow); transform: translateY(-2px); }
+  .cat-card:active { transform: translateY(0); }
+  .cat-card.selected { border-color: var(--accent); background: var(--accent-light); box-shadow: 0 0 0 3px rgba(37,99,235,0.12); }
+  .cat-check {
+    position: absolute; top: 12px; right: 12px;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity 0.15s;
+  }
+  .cat-card.selected .cat-check { opacity: 1; }
+  .cat-icon {
+    width: 38px; height: 38px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 10px; font-size: 18px;
+  }
+  .cat-name { font-size: 13.5px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+  .cat-count { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+
+  /* BUTTONS */
+  .btn-primary {
+    background: var(--accent); color: white; border: none;
+    padding: 13px 24px; border-radius: 10px;
+    font-size: 14px; font-weight: 700; cursor: pointer;
+    transition: all 0.15s ease; font-family: inherit;
+    display: inline-flex; align-items: center; gap: 8px;
+    letter-spacing: -0.01em; -webkit-tap-highlight-color: transparent;
+  }
+  .btn-primary:hover { background: #1d4ed8; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37,99,235,0.3); }
+  .btn-primary:active { transform: translateY(0); }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+  .btn-secondary {
+    background: var(--surface); color: var(--text);
+    border: 1.5px solid var(--border);
+    padding: 13px 24px; border-radius: 10px;
+    font-size: 14px; font-weight: 700; cursor: pointer;
+    transition: all 0.15s ease; font-family: inherit;
+    display: inline-flex; align-items: center; gap: 8px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn-secondary:hover { border-color: #aaa; background: var(--surface2); }
+
+  /* QUIZ HEADER */
+  .quiz-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 18px; flex-wrap: wrap; gap: 10px;
+  }
+  .quiz-cat-label { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+  .quiz-counter { font-size: 13px; font-weight: 700; color: var(--text-muted); font-family: 'DM Mono', monospace; }
+
+  /* PROGRESS */
+  .progress-bar { height: 5px; background: var(--surface2); border-radius: 10px; overflow: hidden; margin-bottom: 20px; }
+  .progress-fill { height: 100%; background: var(--accent); border-radius: 10px; transition: width 0.4s ease; }
+
+  /* LIVE SCORE BAR */
+  .live-score-bar {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--surface); border: 1.5px solid var(--border);
+    border-radius: 10px; padding: 10px 16px;
+    margin-bottom: 18px; font-size: 13px; font-weight: 600;
+  }
+  .live-score-bar .s-label { color: var(--text-muted); }
+  .live-score-bar .s-correct { color: var(--correct); font-weight: 800; }
+  .live-score-bar .s-wrong { color: var(--wrong); font-weight: 800; }
+  .live-score-bar .s-skip { color: var(--text-muted); font-weight: 600; }
+
+  /* QUESTION WRAP */
+  .question-wrap { display: flex; align-items: stretch; gap: 12px; }
+  .nav-btn {
+    flex-shrink: 0; width: 44px; height: 44px; border-radius: 50%;
+    background: var(--surface); border: 1.5px solid var(--border);
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    color: var(--text-muted); transition: all 0.15s; align-self: center; margin-top: 8px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .nav-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); background: var(--accent-light); transform: scale(1.05); }
+  .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  .question-card {
+    flex: 1; background: var(--surface);
+    border: 1.5px solid var(--border); border-radius: 18px;
+    padding: 24px; box-shadow: var(--shadow);
+  }
+  .question-num { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; font-family: 'DM Mono', monospace; }
+  .question-text { font-size: 16px; font-weight: 700; color: var(--text); line-height: 1.55; margin-bottom: 22px; letter-spacing: -0.015em; white-space: pre-wrap; }
+
+  /* OPTIONS */
+  .options-list { display: flex; flex-direction: column; gap: 10px; }
+  .option-btn {
+    display: flex; align-items: flex-start; gap: 12px;
+    background: var(--surface2); border: 1.5px solid var(--border);
+    border-radius: 12px; padding: 13px 15px;
+    cursor: pointer; transition: all 0.18s ease;
+    text-align: left; font-family: inherit; width: 100%;
+    min-height: 48px; /* touch target */
+    -webkit-tap-highlight-color: transparent;
+  }
+  .option-btn:hover:not(:disabled) { border-color: var(--accent); background: var(--accent-light); }
+  .option-btn:active:not(:disabled) { transform: scale(0.99); }
+  .option-btn:disabled { cursor: default; }
+  .option-letter {
+    flex-shrink: 0; width: 28px; height: 28px; border-radius: 8px;
+    background: var(--surface); border: 1.5px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: var(--text-muted);
+    font-family: 'DM Mono', monospace; transition: all 0.18s; margin-top: 1px;
+  }
+  .option-text { font-size: 14px; font-weight: 500; color: var(--text); line-height: 1.5; flex: 1; }
+
+  /* CORRECT */
+  .option-btn.correct { border-color: var(--correct); background: var(--correct-light); animation: pulse-green 0.35s ease; }
+  .option-btn.correct .option-letter { background: var(--correct); border-color: var(--correct); color: white; }
+  .option-btn.correct .option-text { color: var(--correct); font-weight: 600; }
+
+  /* WRONG */
+  .option-btn.wrong { border-color: var(--wrong); background: var(--wrong-light); animation: shake 0.4s ease; }
+  .option-btn.wrong .option-letter { background: var(--wrong); border-color: var(--wrong); color: white; }
+  .option-btn.wrong .option-text { color: var(--wrong); }
+
+  /* SHOW-CORRECT */
+  .option-btn.show-correct { border-color: var(--correct); background: var(--correct-light); }
+  .option-btn.show-correct .option-letter { background: var(--correct); border-color: var(--correct); color: white; }
+
+  @keyframes pulse-green { 0% { transform:scale(1); } 40% { transform:scale(1.015); } 100% { transform:scale(1); } }
+  @keyframes shake { 0%,100% { transform:translateX(0); } 20% { transform:translateX(-6px); } 40% { transform:translateX(6px); } 60% { transform:translateX(-4px); } 80% { transform:translateX(4px); } }
+
+  /* FEEDBACK */
+  .feedback-box {
+    margin-top: 16px; border-radius: 12px; padding: 13px 15px;
+    font-size: 13.5px; font-weight: 500; line-height: 1.6;
+    display: flex; align-items: flex-start; gap: 10px;
+    animation: slideUp 0.25s ease;
+  }
+  @keyframes slideUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+  .feedback-box.correct-fb { background: var(--correct-light); border: 1px solid #bbf7d0; color: #15803d; }
+  .feedback-box.wrong-fb { background: var(--wrong-light); border: 1px solid #fecaca; color: #b91c1c; }
+  .feedback-icon { flex-shrink: 0; margin-top: 1px; }
+  .feedback-title { font-weight: 700; margin-bottom: 3px; }
+
+  /* SCORE DOTS */
+  .score-dots { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 18px; }
+  .score-dot {
+    width: 9px; height: 9px; border-radius: 50%;
+    background: var(--border); transition: background 0.2s;
+  }
+  .score-dot.current { background: var(--accent); }
+  .score-dot.answered-correct { background: var(--correct); }
+  .score-dot.answered-wrong { background: var(--wrong); }
+
+  /* NEXT BUTTON (mobile-friendly sticky bottom) */
+  .quiz-nav-bottom {
+    display: none;
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: var(--surface); border-top: 1px solid var(--border);
+    padding: 12px 20px; z-index: 90;
+    gap: 10px;
+  }
+  .quiz-nav-bottom button { flex: 1; justify-content: center; }
+
+  /* RESULT */
+  .result-card {
+    background: var(--surface); border: 1.5px solid var(--border);
+    border-radius: 20px; padding: 36px 32px;
+    text-align: center; box-shadow: var(--shadow-lg);
+    max-width: 520px; margin: 0 auto;
+  }
+  .result-icon { width: 68px; height: 68px; border-radius: 50%; margin: 0 auto 18px; display: flex; align-items: center; justify-content: center; }
+  .result-score-big { font-size: 54px; font-weight: 800; letter-spacing: -0.05em; margin-bottom: 4px; }
+  .result-label { font-size: 18px; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.02em; }
+  .result-sub { font-size: 14px; color: var(--text-muted); font-weight: 500; margin-bottom: 24px; }
+  .result-stats { display: flex; gap: 12px; margin-bottom: 24px; justify-content: center; flex-wrap: wrap; }
+  .stat-pill { background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 12px 20px; text-align: center; min-width: 86px; }
+  .stat-val { font-size: 22px; font-weight: 800; letter-spacing: -0.03em; display: block; }
+  .stat-lbl { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .result-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+  /* REVIEW */
+  .review-list { margin-top: 24px; display: flex; flex-direction: column; gap: 9px; }
+  .review-item { background: var(--surface); border: 1.5px solid var(--border); border-radius: 12px; padding: 13px 15px; display: flex; align-items: flex-start; gap: 12px; }
+  .review-item.r-correct { border-color: #bbf7d0; }
+  .review-item.r-wrong { border-color: #fecaca; }
+  .review-num { font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 700; color: var(--text-muted); flex-shrink: 0; padding-top: 2px; min-width: 30px; }
+  .review-q { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; line-height: 1.4; }
+  .review-ans { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+  .review-ans .ok { color: var(--correct); font-weight: 700; }
+  .review-ans .no { color: var(--wrong); font-weight: 700; }
+
+  /* FADE */
+  .screen { animation: fadeIn 0.28s ease; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+  /* RESPONSIVE */
+  @media (max-width: 600px) {
+    .question-wrap { gap: 6px; }
+    .nav-btn { display: none; }
+    .quiz-nav-bottom { display: flex; }
+    .question-card { padding: 18px; border-radius: 16px; }
+    .categories-grid { grid-template-columns: 1fr 1fr; }
+    .result-card { padding: 24px 18px; }
+    .result-stats { gap: 8px; }
+    .screen-title { font-size: 22px; }
+    .main { padding: 20px 16px 100px; }
+    .option-btn { padding: 14px 13px; }
+  }
+  @media (min-width: 601px) {
+    .quiz-nav-bottom { display: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <div class="header-icon">
+      <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+      </svg>
+    </div>
+    <div class="header-info">
+      <div class="header-title">Quiz Latihan — Frontend & AI</div>
+      <div class="header-subtitle" id="header-subtitle">RPL · Genap 2026 · Pilih kategori untuk mulai</div>
+    </div>
+    <div class="header-badge" id="header-badge">QUIZ</div>
+  </div>
+</header>
+
+<main class="main" id="app">
+
+  <!-- CATEGORY SCREEN -->
+  <div id="screen-category" class="screen">
+    <h1 class="screen-title">Pilih Kategori</h1>
+    <p class="screen-desc">Pilih satu atau beberapa kategori materi yang ingin kamu latih.</p>
+    <div class="categories-grid" id="cat-grid"></div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+      <button class="btn-primary" id="btn-start" disabled onclick="startQuiz()">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        Mulai Latihan
+        <span id="total-soal-badge" style="display:none;background:rgba(255,255,255,0.25);padding:2px 8px;border-radius:20px;font-size:12px"></span>
+      </button>
+      <button class="btn-secondary" onclick="selectAll()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        Pilih Semua
+      </button>
+    </div>
+  </div>
+
+  <!-- QUIZ SCREEN -->
+  <div id="screen-quiz" class="screen" style="display:none">
+    <div class="quiz-header">
+      <div class="quiz-cat-label" id="quiz-cat-label">—</div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="quiz-counter" id="quiz-counter">1/1</div>
+        <button class="btn-secondary" style="padding:8px 14px;font-size:13px" onclick="exitQuiz()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          Keluar
+        </button>
+      </div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    <div class="live-score-bar">
+      <span class="s-label">Nilai:</span>
+      <span class="s-correct" id="ls-correct">0</span> <span class="s-label">benar</span> ·
+      <span class="s-wrong" id="ls-wrong">0</span> <span class="s-label">salah</span> ·
+      <span class="s-skip" id="ls-skip">0</span> <span class="s-label">belum</span>
+    </div>
+    <div class="question-wrap">
+      <button class="nav-btn" id="btn-prev" onclick="goPrev()" disabled>
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div class="question-card" id="question-card">
+        <!-- filled by JS -->
+      </div>
+      <button class="nav-btn" id="btn-next-right" onclick="goNext()">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- RESULT SCREEN -->
+  <div id="screen-result" class="screen" style="display:none">
+    <div class="result-card" id="result-card"><!-- filled by JS --></div>
+    <div style="margin-top:28px">
+      <div style="font-size:16px;font-weight:800;margin-bottom:4px;letter-spacing:-0.02em">Ulasan Jawaban</div>
+      <div style="font-size:13px;color:var(--text-muted);font-weight:500;margin-bottom:4px">Lihat detail jawaban kamu di bawah</div>
+      <div class="review-list" id="review-list"><!-- filled by JS --></div>
+    </div>
+  </div>
+
+</main>
+
+<!-- MOBILE NAV BOTTOM -->
+<div class="quiz-nav-bottom" id="quiz-nav-bottom" style="display:none">
+  <button class="btn-secondary" id="btn-prev-mob" onclick="goPrev()">
+    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    Prev
+  </button>
+  <button class="btn-primary" id="btn-next-mob" onclick="goNext()" style="flex:2;justify-content:center">
+    Lanjut
+    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+  </button>
+</div>
+
+<script>
+// ===================== DATA SOAL =====================
+
+const CATEGORIES = [
+  {
+    id: 'tailwind',
+    name: 'Tailwind CSS',
+    color: '#0ea5e9',
+    icon: '🎨',
+    questions: [
+      {
+        q: 'Tailwind CSS menggunakan pendekatan apa dalam penulisan style?',
+        opts: ['Component-based CSS', 'Utility-first CSS', 'Inline style JavaScript', 'BEM Methodology', 'CSS-in-JS'],
+        correct: 1,
+        explanation: 'Tailwind CSS menggunakan pendekatan utility-first, di mana kamu menulis class-class kecil yang masing-masing mewakili satu properti CSS (misalnya p-4, text-red-500). Ini berbeda dari pendekatan component-based seperti Bootstrap.'
+      },
+      {
+        q: 'Breakpoint "md" di Tailwind CSS secara default berlaku untuk layar dengan lebar minimal berapa?',
+        opts: ['480px', '640px', '768px', '1024px', '1280px'],
+        correct: 2,
+        explanation: 'Breakpoint default Tailwind: sm=640px, md=768px, lg=1024px, xl=1280px, 2xl=1536px. Jadi class md:flex berarti "display: flex hanya berlaku mulai dari lebar 768px ke atas".'
+      },
+      {
+        q: 'Class Tailwind mana yang digunakan untuk membuat elemen hanya tampil di layar sm ke atas?',
+        opts: ['sm:block hidden', 'hidden sm:block', 'block sm:hidden', 'sm:visible', 'display-sm'],
+        correct: 1,
+        explanation: '"hidden sm:block" artinya: pada semua ukuran (default) elemen di-hidden, lalu mulai dari sm (640px) ke atas menjadi block. Tailwind bersifat mobile-first, artinya prefix menentukan ukuran minimal.'
+      },
+      {
+        q: 'Untuk membuat layout grid 3 kolom yang berubah jadi 1 kolom di mobile, class Tailwind yang tepat adalah...',
+        opts: ['grid cols-3 mobile:cols-1', 'grid grid-cols-1 md:grid-cols-3', 'grid-3 sm:grid-1', 'flex flex-col md:flex-row', 'columns-3'],
+        correct: 1,
+        explanation: '"grid grid-cols-1 md:grid-cols-3" menggunakan mobile-first: defaultnya 1 kolom, lalu ab md (768px) menjadi 3 kolom. Ini adalah pola umum responsive layout di Tailwind.'
+      },
+      {
+        q: 'Pseudo-class hover di Tailwind ditulis dengan cara...',
+        opts: ['hover-bg-blue-500', ':hover:bg-blue-500', 'hover:bg-blue-500', 'bg-blue-500:hover', 'on-hover:bg-blue-500'],
+        correct: 2,
+        explanation: 'Di Tailwind, pseudo-class ditulis sebagai prefix sebelum nama class, dipisah titik dua: hover:bg-blue-500. Begitu juga focus:, active:, disabled:, dll.'
+      },
+      {
+        q: 'Class mana yang digunakan untuk memberikan padding 16px (1rem) pada semua sisi di Tailwind?',
+        opts: ['padding-4', 'p-16', 'p-4', 'pad-4', 'padding-16'],
+        correct: 2,
+        explanation: 'p-4 di Tailwind berarti padding sebesar 4 × 4px = 16px (1rem) pada semua sisi. Skala Tailwind: 1 unit = 4px. p-1=4px, p-2=8px, p-4=16px, p-8=32px.'
+      },
+      {
+        q: 'Untuk membuat teks berwarna merah dengan intensitas 500, class Tailwind yang tepat adalah...',
+        opts: ['color-red-500', 'font-red-500', 'text-red-500', 'red-text-500', 'text-color-red-500'],
+        correct: 2,
+        explanation: 'text-{warna}-{intensitas} adalah pola class warna teks di Tailwind. Intensitas berkisar dari 50 (paling terang) hingga 950 (paling gelap). text-red-500 memberi warna merah sedang.'
+      },
+      {
+        q: 'Mana yang merupakan cara yang benar untuk menerapkan efek bayangan (shadow) di Tailwind CSS?',
+        opts: ['box-shadow-md', 'shadow-box-md', 'shadow-md', 'effect-shadow-md', 'drop-shadow-md'],
+        correct: 2,
+        explanation: 'Class shadow di Tailwind: shadow-sm, shadow, shadow-md, shadow-lg, shadow-xl, shadow-2xl. shadow-md memberikan box-shadow berukuran sedang pada elemen.'
+      },
+      {
+        q: 'Class Tailwind untuk membuat elemen mengambil lebar penuh parent-nya adalah...',
+        opts: ['w-100', 'w-100%', 'width-full', 'w-full', 'full-width'],
+        correct: 3,
+        explanation: 'w-full di Tailwind setara dengan width: 100%. Tailwind menggunakan kata "full" untuk menyatakan 100%, bukan angka 100. Contoh lain: h-full (height 100%), min-h-full.'
+      },
+      {
+        q: 'Untuk memposisikan elemen secara absolute di kanan atas parent (dengan parent relative), class Tailwind yang tepat adalah...',
+        opts: ['position-absolute top-0 right-0', 'absolute top-0 right-0', 'abs top right', 'fixed top-0 right-0', 'absolute-top-right'],
+        correct: 1,
+        explanation: '"absolute top-0 right-0" di Tailwind setara dengan: position: absolute; top: 0; right: 0. Parent harus memiliki class "relative" agar posisi absolute bekerja relatif terhadapnya.'
+      },
+      {
+        q: 'Di Tailwind, class mana yang tepat untuk membuat flexbox dengan item-item di tengah secara horizontal DAN vertikal?',
+        opts: ['flex center-all', 'flex justify-center align-center', 'flex justify-center items-center', 'flex text-center align-middle', 'flex content-center'],
+        correct: 2,
+        explanation: '"flex justify-center items-center": justify-content menentukan sumbu utama (horizontal pada row), items-align menentukan sumbu silang (vertikal). Keduanya center = elemen benar-benar di tengah.'
+      },
+      {
+        q: 'Berapa besar gap (jarak) antar elemen jika menggunakan class "gap-6" di Tailwind?',
+        opts: ['6px', '12px', '18px', '24px', '6rem'],
+        correct: 3,
+        explanation: 'Satu unit Tailwind = 4px. gap-6 = 6 × 4px = 24px. Ini berlaku untuk gap di flex maupun grid. gap-1=4px, gap-2=8px, gap-4=16px, gap-6=24px, gap-8=32px.'
+      }
+    ]
+  },
+  {
+    id: 'fetch-axios',
+    name: 'Fetch API & Axios',
+    color: '#7c3aed',
+    icon: '🔗',
+    questions: [
+      {
+        q: 'Apa perbedaan utama antara Fetch API dan Axios dalam penanganan response JSON?',
+        opts: [
+          'Tidak ada perbedaan, keduanya identik',
+          'Fetch otomatis parse JSON, Axios harus manual dengan .json()',
+          'Axios otomatis parse JSON response, Fetch harus memanggil response.json() secara manual',
+          'Keduanya tidak bisa menangani JSON',
+          'Fetch hanya untuk GET, Axios untuk semua method'
+        ],
+        correct: 2,
+        explanation: 'Pada Fetch, kamu harus memanggil response.json() secara eksplisit (mengembalikan Promise lagi). Axios secara otomatis melakukan parsing JSON dan hasilnya langsung ada di data.data.'
+      },
+      {
+        q: 'Kenapa Fetch API tidak otomatis throw error ketika mendapatkan status HTTP 404 atau 500?',
+        opts: [
+          'Karena Fetch sudah usang dan perlu diganti Axios',
+          'Karena Fetch hanya menolak Promise jika terjadi network error, bukan HTTP error',
+          'Karena browser memblokir status tersebut',
+          'Karena 404 dan 500 bukan error menurut HTTP',
+          'Karena JavaScript tidak bisa membaca status code'
+        ],
+        correct: 1,
+        explanation: 'Fetch Promise hanya rejected jika terjadi network failure (misalnya tidak ada koneksi). Status HTTP 404/500 tetap dianggap "berhasil" oleh Fetch, jadi kamu harus cek response.ok atau response.status secara manual.'
+      },
+      {
+        q: 'Cara yang benar untuk melakukan POST request dengan body JSON menggunakan Fetch adalah...',
+        opts: [
+          'fetch(url, { method: "POST", body: { name: "Test" } })',
+          'fetch(url).post({ name: "Test" })',
+          'fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: "Test" }) })',
+          'fetch.post(url, { name: "Test" })',
+          'fetch(url, { post: true, json: { name: "Test" } })'
+        ],
+        correct: 2,
+        explanation: 'Untuk POST JSON dengan Fetch, kamu harus: (1) set method:"POST", (2) set header Content-Type:"application/json", dan (3) stringify body dengan JSON.stringify(). Tanpa ketiganya, server tidak bisa membaca data dengan benar.'
+      },
+      {
+        q: 'Manakah cara yang benar untuk mengirim query parameter dengan Axios?',
+        opts: [
+          'axios.get(url + "?page=1&limit=10")',
+          'axios.get(url, { params: { page: 1, limit: 10 } })',
+          'axios.get(url, { query: { page: 1, limit: 10 } })',
+          'axios.get(url).params({ page: 1, limit: 10 })',
+          'axios.query(url, { page: 1, limit: 10 })'
+        ],
+        correct: 1,
+        explanation: 'Axios menyediakan properti params pada config yang secara otomatis akan mengkonversi objek menjadi query string. Lebih bersih dan aman dibanding string concatenation manual.'
+      },
+      {
+        q: 'Apa fungsi dari Axios interceptor?',
+        opts: [
+          'Untuk memblokir semua request yang keluar',
+          'Untuk mengkompres response dari server',
+          'Untuk mencegat request sebelum dikirim atau response sebelum diterima, agar bisa memodifikasi atau menangani error global',
+          'Untuk mempercepat request dengan caching otomatis',
+          'Untuk mengkonversi format data secara otomatis'
+        ],
+        correct: 2,
+        explanation: 'Axios interceptor memungkinkan kamu mencegat setiap request (misalnya tambah auth header) atau response (misalnya handle 401 error secara global) sebelum ditangani oleh kode aplikasi.'
+      },
+      {
+        q: 'Apa method HTTP yang tepat untuk memperbarui sebagian data (partial update) pada REST API?',
+        opts: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+        correct: 3,
+        explanation: 'PATCH digunakan untuk partial update — hanya memperbarui field yang dikirim. PUT digunakan untuk full replace (semua field harus dikirim). GET=baca, POST=buat, DELETE=hapus.'
+      },
+      {
+        q: 'Bagaimana cara menambahkan Authorization token pada setiap request menggunakan Axios default header?',
+        opts: [
+          'axios.defaults.auth = token',
+          'axios.setToken(token)',
+          'axios.defaults.headers.common["Authorization"] = `Bearer ${token}`',
+          'axios.headers.set("Bearer", token)',
+          'axios.config.token = token'
+        ],
+        correct: 2,
+        explanation: 'axios.defaults.headers.common["Authorization"] menetapkan header Authorization untuk semua request. Pola Bearer token adalah standar OAuth2/JWT. Bisa juga menggunakan interceptor untuk lebih fleksibel.'
+      },
+      {
+        q: 'Ketika menggunakan async/await dengan Fetch, bagaimana cara yang benar melakukan error handling?',
+        opts: [
+          'Fetch otomatis handle error, tidak perlu try-catch',
+          'try { const res = await fetch(url); if (!res.ok) throw new Error(); const data = await res.json(); } catch(e) { }',
+          'fetch(url).catch(err => console.log(err))',
+          'await fetch(url).onError(handleError)',
+          'fetch(url, { onError: handleError })'
+        ],
+        correct: 1,
+        explanation: 'Pattern yang benar: gunakan try-catch, cek response.ok (karena Fetch tidak auto-throw pada HTTP error), baru kemudian parse JSON. Tanpa cek response.ok, error 404/500 tidak akan tertangkap.'
+      },
+      {
+        q: 'Apa yang dimaksud dengan CORS error dan kapan biasanya terjadi saat menggunakan Fetch/Axios?',
+        opts: [
+          'Error saat format JSON salah',
+          'Error saat server tidak aktif',
+          'Error keamanan browser ketika frontend di origin berbeda mencoba mengakses resource dari origin lain yang tidak mengizinkan',
+          'Error saat token expired',
+          'Error saat internet putus'
+        ],
+        correct: 2,
+        explanation: 'CORS (Cross-Origin Resource Sharing) adalah mekanisme keamanan browser. Error CORS terjadi saat kamu mengakses API dari domain/port berbeda yang belum mengizinkan. Solusinya ada di sisi server (menambah header Access-Control-Allow-Origin).'
+      },
+      {
+        q: 'Apa perbedaan utama Axios vs Fetch dalam hal dukungan browser lama?',
+        opts: [
+          'Tidak ada perbedaan',
+          'Fetch mendukung IE11, Axios tidak',
+          'Axios mendukung browser lama termasuk IE11, sedangkan Fetch adalah API modern yang tidak tersedia di browser lama',
+          'Keduanya tidak mendukung browser lama',
+          'Axios hanya bisa di Node.js, Fetch hanya di browser'
+        ],
+        correct: 2,
+        explanation: 'Axios menggunakan XMLHttpRequest di balik layar sehingga kompatibel dengan browser lama. Fetch adalah Web API modern yang tidak tersedia di IE11 dan butuh polyfill untuk browser lama.'
+      }
+    ]
+  },
+  {
+    id: 'react-hooks',
+    name: 'React Hooks',
+    color: '#0891b2',
+    icon: '⚛️',
+    questions: [
+      {
+        q: 'Apa kegunaan utama dari hook useState di React?',
+        opts: [
+          'Untuk mengambil data dari API',
+          'Untuk menyimpan dan memperbarui state lokal dalam functional component sehingga komponen akan re-render ketika state berubah',
+          'Untuk melakukan side effects seperti fetch data',
+          'Untuk berbagi state antar komponen',
+          'Untuk memori cache nilai yang mahal'
+        ],
+        correct: 1,
+        explanation: 'useState menyediakan state lokal untuk functional component. Ia mengembalikan [nilai, fungsiSetter]. Ketika fungsiSetter dipanggil, React akan men-trigger re-render komponen dengan nilai state terbaru.'
+      },
+      {
+        q: 'Apa output yang benar dari kode ini?\nconst [count, setCount] = useState(0);\nsetCount(count + 1);\nsetCount(count + 1);\nconsole.log(count);',
+        opts: ['2', '1', '0', 'undefined', 'Error'],
+        correct: 2,
+        explanation: 'State update di React bersifat asynchronous. Nilai count tidak langsung berubah setelah setCount dipanggil — console.log masih membaca nilai count saat ini (0). Selain itu, dua setCount(count+1) keduanya menggunakan count=0, jadi hasilnya 1, bukan 2.'
+      },
+      {
+        q: 'Kapan useEffect dijalankan tanpa dependency array [ ] kosong?',
+        opts: [
+          'Hanya sekali saat komponen pertama kali mount',
+          'Setiap kali komponen re-render',
+          'Hanya saat komponen unmount',
+          'Tidak pernah dijalankan',
+          'Hanya ketika ada perubahan props'
+        ],
+        correct: 1,
+        explanation: 'useEffect tanpa dependency array akan dijalankan SETIAP KALI komponen render atau re-render. useEffect(() => {}, []) — array kosong — hanya jalan sekali saat mount. useEffect(() => {}, [dep]) jalan saat dep berubah.'
+      },
+      {
+        q: 'Apa fungsi cleanup function di dalam useEffect?',
+        opts: [
+          'Untuk menginisialisasi state awal',
+          'Untuk memanggil API saat komponen mount',
+          'Untuk membersihkan side effects (misal: unsubscribe, clear timer) ketika komponen unmount atau sebelum effect dijalankan ulang',
+          'Untuk men-reset semua state ke nilai awal',
+          'Untuk mencegah re-render berlebihan'
+        ],
+        correct: 2,
+        explanation: 'Cleanup function adalah fungsi yang dikembalikan oleh useEffect. Ia dipanggil sebelum komponen unmount atau sebelum effect dijalankan ulang. Penting untuk mencegah memory leak — misalnya clearInterval, removeEventListener, atau unsubscribe.'
+      },
+      {
+        q: 'Cara yang benar untuk mengupdate array dalam state React adalah...',
+        opts: [
+          'state.push(newItem); setState(state)',
+          'setState(state.push(newItem))',
+          'setState([...state, newItem])',
+          'state[state.length] = newItem; setState(state)',
+          'setState(state.add(newItem))'
+        ],
+        correct: 2,
+        explanation: 'React menggunakan perbandingan referensi untuk mendeteksi perubahan state. Mutasi langsung (push, splice) tidak memicu re-render karena referensi array sama. Gunakan spread operator [...state, newItem] atau .concat() untuk membuat array baru.'
+      },
+      {
+        q: 'Mana pernyataan yang benar tentang aturan penggunaan Hooks di React?',
+        opts: [
+          'Hooks boleh dipanggil di dalam kondisi if/else',
+          'Hooks hanya boleh dipakai di class component',
+          'Hooks harus dipanggil di level teratas functional component, tidak boleh di dalam loop, kondisi, atau nested function',
+          'Hooks boleh dipanggil dari fungsi biasa (bukan component)',
+          'Hooks tidak boleh digunakan bersamaan'
+        ],
+        correct: 2,
+        explanation: 'Rules of Hooks: (1) Panggil hooks hanya di level teratas — jangan dalam if/loop/nested function. (2) Panggil hooks hanya dari React functional components atau custom hooks. Aturan ini penting agar urutan hooks konsisten setiap render.'
+      },
+      {
+        q: 'Apa yang dilakukan hook useRef?',
+        opts: [
+          'Mengelola state yang memicu re-render',
+          'Mengakses DOM element secara langsung atau menyimpan nilai mutable yang tidak memicu re-render saat berubah',
+          'Mengambil data dari server',
+          'Membuat context global',
+          'Memoize komponen agar tidak re-render'
+        ],
+        correct: 1,
+        explanation: 'useRef mengembalikan objek { current: value } yang persisten. Mengubah .current tidak memicu re-render. Dua kegunaan utama: (1) mengakses DOM element langsung (ref.current = input element), (2) menyimpan nilai yang harus persisten tapi tidak perlu memicu render.'
+      },
+      {
+        q: 'Di Next.js App Router, apa perbedaan utama antara Server Component dan Client Component?',
+        opts: [
+          'Server Component lebih cepat karena berjalan di GPU',
+          'Client Component tidak bisa menerima props',
+          'Server Component dirender di server (tidak ada interaktivitas/hooks/event handler), Client Component menggunakan "use client" dan bisa menggunakan hooks serta event',
+          'Server Component hanya untuk halaman statis, Client untuk dynamic',
+          'Tidak ada perbedaan, keduanya identik'
+        ],
+        correct: 2,
+        explanation: 'Di Next.js App Router: Server Components dirender di server, tidak bisa menggunakan hooks/event handler, tapi bisa langsung akses database. Client Components ditandai "use client", berjalan di browser, dan mendukung interaktivitas, useState, useEffect, dll.'
+      },
+      {
+        q: 'Manakah cara navigasi yang benar menggunakan Next.js App Router?',
+        opts: [
+          'window.location.href = "/about"',
+          'router.push("/about") dari useRouter() milik next/navigation',
+          'navigate("/about")',
+          'history.push("/about")',
+          'Link.go("/about")'
+        ],
+        correct: 1,
+        explanation: 'Di Next.js App Router, gunakan useRouter dari "next/navigation" (bukan "next/router"). router.push("/about") untuk navigasi programmatic. Untuk navigasi deklaratif, gunakan komponen <Link href="/about">.'
+      },
+      {
+        q: 'Apa yang terjadi jika kamu menggunakan useState atau useEffect dalam Server Component di Next.js?',
+        opts: [
+          'Berfungsi normal seperti di Client Component',
+          'Akan menghasilkan error, karena hooks React hanya bisa digunakan di Client Component',
+          'State tidak akan tersimpan tapi tidak error',
+          'Komponen akan otomatis dikonversi menjadi Client Component',
+          'Akan menghasilkan warning tapi tetap berjalan'
+        ],
+        correct: 1,
+        explanation: 'Server Components tidak bisa menggunakan React hooks (useState, useEffect, dll) karena hooks memerlukan browser runtime. Jika kamu perlu hooks, tambahkan "use client" di bagian paling atas file untuk menjadikannya Client Component.'
+      },
+      {
+        q: 'Apa kegunaan hook useCallback di React?',
+        opts: [
+          'Untuk memanggil API secara otomatis',
+          'Untuk memoize nilai yang mahal dihitung',
+          'Untuk memoize fungsi agar referensinya tidak berubah di setiap render, mencegah re-render tidak perlu pada child component',
+          'Untuk menggabungkan beberapa state menjadi satu',
+          'Untuk membuat custom event handler'
+        ],
+        correct: 2,
+        explanation: 'useCallback mengembalikan fungsi yang di-memoize — referensinya hanya berubah jika dependency berubah. Berguna saat fungsi diteruskan sebagai props ke child component yang di-wrap React.memo, sehingga child tidak re-render karena referensi fungsi yang berubah.'
+      },
+      {
+        q: 'Dalam form React, apa yang dimaksud dengan "controlled component"?',
+        opts: [
+          'Komponen yang dikontrol oleh parent dengan props',
+          'Input HTML yang nilainya dikontrol sepenuhnya oleh React state — nilai input selalu sinkron dengan state',
+          'Komponen yang punya access control / authentication',
+          'Komponen yang menggunakan Redux untuk state management',
+          'Input yang dinonaktifkan (disabled)'
+        ],
+        correct: 1,
+        explanation: 'Controlled component adalah input yang nilainya dikendalikan oleh React state. Atribut value={state} dan onChange={setState} memastikan input dan state selalu sinkron. Lawan dari controlled adalah uncontrolled component (menggunakan ref).'
+      }
+    ]
+  },
+  {
+    id: 'ai-konsep',
+    name: 'Konsep AI & Sejarah',
+    color: '#2563eb',
+    icon: '🤖',
+    questions: [
+      {
+        q: 'Apa karakteristik utama dari Sistem Pakar (Expert Systems) yang membuatnya sukses pada masa kebangkitan AI tahun 1980-an?',
+        opts: ['Fokus pada pengembangan robot humanoid yang dapat menavigasi lingkungan dinamis.', 'Penggunaan basis pengetahuan yang dikumpulkan dari pakar manusia untuk memecahkan masalah.', 'Penggunaan jaringan saraf tiruan yang sangat besar untuk pengenalan gambar.', 'Pemecahan masalah dengan simulasi visual dan virtual reality tingkat lanjut.', 'Kemampuan untuk belajar secara unsupervised dari data tidak berlabel yang sangat besar.'],
+        correct: 1,
+        explanation: 'Sistem Pakar pada era 1980-an mengandalkan basis pengetahuan (knowledge base) yang dikumpulkan dari pakar manusia dan diproses dengan mesin inferensi (inference engine) untuk memecahkan masalah di domain tertentu.'
+      },
+      {
+        q: 'Robot pembersih rumah yang dapat bergerak dan menghindari rintangan menggunakan sensor dan algoritma termasuk aplikasi…',
+        opts: ['Logical programming', 'Computer Networking', '3D Animation', 'AI Robotics', 'Database Management'],
+        correct: 3,
+        explanation: 'Robot pembersih yang menggunakan sensor untuk mendeteksi lingkungan dan algoritma untuk navigasi adalah contoh nyata dari penerapan AI Robotics.'
+      },
+      {
+        q: 'Metode penyelesaian masalah yang berfokus pada pencarian solusi terbaik dari banyak pilihan disebut…',
+        opts: ['Logging', 'Sorting', 'Optimasi', 'Encoding', 'Rendering'],
+        correct: 2,
+        explanation: 'Optimasi (Optimization) adalah metode yang bertujuan menemukan solusi terbaik (nilai maksimum atau minimum) dari sekumpulan kemungkinan, umum digunakan dalam AI dan machine learning.'
+      },
+      {
+        q: 'Contoh penggunaan AI di sektor pertanian adalah…',
+        opts: ['Cangkul digital', 'Karung otomatis', 'Irigasi dan pupuk digital', 'Traktor digital', 'Sensor tanaman dan prediksi panen'],
+        correct: 4,
+        explanation: 'Penggunaan sensor pada tanaman untuk memantau kondisi pertumbuhan dan algoritma AI untuk memprediksi hasil panen adalah contoh nyata penerapan AI di bidang pertanian modern (precision agriculture).'
+      },
+      {
+        q: 'Contoh penggunaan AI dalam transportasi modern adalah…',
+        opts: ['Rambu lalu lintas digital', 'SIM digital', 'Kunci pintu digital', 'Peta digital pada mobil', 'Lampu lalu lintas otomatis berbasis sensor dan data'],
+        correct: 4,
+        explanation: 'Lampu lalu lintas adaptif yang menggunakan sensor dan data real-time untuk mengatur arus lalu lintas adalah salah satu implementasi AI dalam transportasi cerdas (smart transportation).'
+      }
+    ]
+  },
+  {
+    id: 'python-oop',
+    name: 'Python & OOP',
+    color: '#7c3aed',
+    icon: '🐍',
+    questions: [
+      {
+        q: "Output dari print('A' or 'B') adalah...",
+        opts: ['AB', 'A', 'False', 'True', 'B'],
+        correct: 1,
+        explanation: "Operator `or` di Python mengembalikan operand pertama jika bernilai truthy, tanpa mengevaluasi operand kedua. String non-kosong 'A' adalah truthy, sehingga hasilnya adalah 'A'."
+      },
+      {
+        q: "Apa output dari kode berikut?\nclass A:\n    x = 10\na1 = A()\na2 = A()\na1.x = 20\nprint(a1.x, a2.x)",
+        opts: ['Error', '20 20', '10 10', '20 10', '10 20'],
+        correct: 3,
+        explanation: 'a1.x = 20 membuat instance attribute baru pada a1, sehingga a1.x menjadi 20. Sedangkan a2.x tetap merujuk pada class attribute A.x = 10. Output: 20 10.'
+      },
+      {
+        q: 'Apa fungsi dari super() dalam Python?',
+        opts: ['Untuk mengakses method atau atribut dari parent class', 'Untuk membuat objek menjadi superclass', 'Untuk menghentikan pewarisan', 'Untuk mengakses method anak class', 'Untuk mendeklarasikan variabel global'],
+        correct: 0,
+        explanation: 'super() digunakan untuk memanggil method atau atribut dari parent (base) class, sangat berguna dalam inheritance ketika ingin memperluas (extend) perilaku parent class tanpa menggantikannya sepenuhnya.'
+      },
+      {
+        q: "Perhatikan kode berikut:\nclass Keranjang:\n    isi = []\n    def tambah(self, barang):\n        self.isi.append(barang)\nk1 = Keranjang()\nk2 = Keranjang()\nk1.tambah('Apel')\nk2.tambah('Jeruk')\nprint(k1.isi)",
+        opts: ['[]', "['Jeruk']", 'Error', "['Apel', 'Jeruk']", "['Apel']"],
+        correct: 3,
+        explanation: "isi = [] adalah class variable yang di-share oleh semua instance. Ketika k1 dan k2 memanggil .append() ke self.isi, keduanya memodifikasi list yang sama. Sehingga k1.isi berisi ['Apel', 'Jeruk']."
+      },
+      {
+        q: 'Polymorphism dalam Python memungkinkan kita untuk...',
+        opts: ['Membuat class dengan method yang berbeda', 'Menyembunyikan data sensitif', 'Menggunakan nama method yang sama pada class yang berbeda dengan perilaku yang berbeda', 'Mewarisi dari banyak class sekaligus tanpa batas', 'Mengubah kode sumber Python menjadi bahasa mesin'],
+        correct: 2,
+        explanation: 'Polymorphism berasal dari kata Yunani yang berarti "banyak bentuk". Dalam OOP, ini memungkinkan method dengan nama yang sama pada class berbeda memiliki implementasi (perilaku) yang berbeda.'
+      },
+      {
+        q: 'Apa output dari: print(2 == 2 and 3 > 1)',
+        opts: ['1', 'True', 'Error', 'False', '0'],
+        correct: 1,
+        explanation: '2 == 2 menghasilkan True, dan 3 > 1 menghasilkan True. True and True = True. Python mencetak True (bukan 1, meskipun True == 1 di Python).'
+      },
+      {
+        q: 'Konvensi penamaan standar saat mengimpor library Pandas dan NumPy di Python adalah...',
+        opts: ['import pd as pandas dan import np as numpy', 'import pandas as pa dan import numpy as nu', 'import pandas dan import numpy as num', 'import pandas as pd dan import numpy as np', 'import pandas as pds dan import numpy as npy'],
+        correct: 3,
+        explanation: 'Konvensi universal yang digunakan oleh seluruh komunitas Python adalah `import pandas as pd` dan `import numpy as np`. Alias ini membuat kode lebih ringkas dan mudah dibaca.'
+      },
+      {
+        q: "Perhatikan fungsi cetak_suara:\nclass Bebek:\n    def bunyi(self): return 'Kwek'\nclass Ayam:\n    def bunyi(self): return 'Petok'\ndef cetak_suara(hewan):\n    print(hewan.bunyi())\ncetak_suara(Bebek())\ncetak_suara(Ayam())",
+        opts: ['Petok Petok', 'Kwek Kwek', 'Error karena tipe data parameter tidak dideklarasikan', 'Petok Kwek', 'Kwek Petok'],
+        correct: 4,
+        explanation: 'Ini adalah contoh Duck Typing dan Polymorphism di Python. cetak_suara() memanggil .bunyi() pada objek yang diberikan. Bebek menghasilkan "Kwek" dan Ayam menghasilkan "Petok". Output: Kwek lalu Petok.'
+      }
+    ]
+  },
+  {
+    id: 'pandas',
+    name: 'Pandas & Data',
+    color: '#0891b2',
+    icon: '📊',
+    questions: [
+      {
+        q: 'Fungsi yang digunakan di Pandas untuk mengelompokkan data berdasarkan satu atau beberapa kategori agar bisa dilakukan fungsi agregasi adalah...',
+        opts: ['df.groupby()', 'df.summarize()', 'df.cluster()', 'df.aggregate()', 'df.group()'],
+        correct: 0,
+        explanation: 'df.groupby() adalah fungsi utama Pandas untuk operasi split-apply-combine: memisahkan data berdasarkan kategori, menerapkan fungsi agregasi, lalu menggabungkan hasilnya.'
+      },
+      {
+        q: "Metode yang digunakan untuk mengonversi tipe data sebuah kolom (misalnya ke integer) di Pandas adalah...",
+        opts: ["df['kolom'].convert(int)", "df['kolom'].cast(int)", "df['kolom'].to_int()", "df['kolom'].astype(int)", "df['kolom'].type(int)"],
+        correct: 3,
+        explanation: 'astype() adalah metode Pandas untuk mengonversi (cast) tipe data suatu Series atau DataFrame ke tipe data yang diinginkan, misalnya .astype(int), .astype(float), atau .astype(str).'
+      },
+      {
+        q: 'Untuk mengetahui informasi ringkas DataFrame (jumlah baris, kolom, tipe data, memori), perintah yang tepat adalah...',
+        opts: ['df.summary()', 'df.describe()', 'df.shape', 'df.dtypes()', 'df.info()'],
+        correct: 4,
+        explanation: 'df.info() menampilkan ringkasan struktur DataFrame: jumlah baris & kolom, nama kolom, jumlah nilai non-null, tipe data tiap kolom, dan estimasi penggunaan memori.'
+      },
+      {
+        q: "Perintah yang benar untuk mengubah nama kolom 'gaji' menjadi 'salary' pada DataFrame df adalah...",
+        opts: ["df.rename-columns['gaji'] = 'salary'", "df.rename(columns={'gaji': 'salary'})", "df.replace_col({'gaji': 'salary'})", "df.change_column('gaji', 'salary')"],
+        correct: 1,
+        explanation: "df.rename(columns={'nama_lama': 'nama_baru'}) adalah sintaks yang benar untuk mengubah nama kolom di Pandas. Parameter columns menerima dictionary pemetaan nama lama ke nama baru."
+      },
+      {
+        q: "Sintaks yang benar untuk memfilter baris dengan kolom 'Umur' lebih dari 25 di Pandas adalah...",
+        opts: ["filter(df, 'Umur' > 25)", "df['Umur'] > 25", "df.where(Umur > 25)", "df[df['Umur'] > 25]", "df.filter('Umur' > 25)"],
+        correct: 3,
+        explanation: "df[df['Umur'] > 25] adalah Boolean Indexing di Pandas. Ekspresi df['Umur'] > 25 menghasilkan Series boolean, yang kemudian digunakan untuk memfilter baris-baris yang bernilai True."
+      },
+      {
+        q: "Apa itu 'Missing Value' dalam dataset?",
+        opts: ['Data yang salah ketik.', 'Data yang hilang atau kosong pada baris/kolom tertentu.', 'Data yang sudah dihapus manual.', 'Data yang nilainya nol.'],
+        correct: 1,
+        explanation: 'Missing Value (nilai yang hilang) adalah sel dalam dataset yang tidak memiliki nilai — biasanya direpresentasikan sebagai NaN (Not a Number) di Pandas. Ini berbeda dari nilai nol yang merupakan data valid.'
+      },
+      {
+        q: 'Fungsi df.describe() pada Pandas secara default akan menghasilkan...',
+        opts: ['Mengembalikan nilai boolean apakah data memiliki missing value.', 'Menampilkan 10 baris terakhir dan pertama.', 'Ringkasan statistik deskriptif untuk kolom numerik (mean, standar deviasi, min, max, kuartil).', 'Menampilkan semua tipe data kolom secara detail.', 'Menghapus kolom dengan tipe data string.'],
+        correct: 2,
+        explanation: 'df.describe() menghasilkan tabel statistik deskriptif untuk kolom numerik: count, mean, std, min, 25%, 50% (median), 75%, dan max. Sangat berguna untuk eksplorasi data awal (EDA).'
+      },
+      {
+        q: "Bagaimana cara mengembalikan array yang berisi daftar nilai-nilai unik dari kolom 'Kota' di Pandas?",
+        opts: ["df['Kota'].unique()", "df['Kota'].value_counts()", "df['Kota'].drop_duplicates()", "df['Kota'].distinct()", "df['Kota'].get_unique()"],
+        correct: 0,
+        explanation: "df['Kota'].unique() mengembalikan array NumPy berisi nilai-nilai unik tanpa duplikat. Berbeda dengan value_counts() yang menghitung frekuensi tiap nilai, unique() hanya menampilkan nilainya saja."
+      },
+      {
+        q: 'Yang termasuk metode statistik dasar di Pandas adalah...',
+        opts: ['mean()', 'semua benar', 'median()', 'min()', 'max()'],
+        correct: 1,
+        explanation: 'Pandas menyediakan berbagai metode statistik deskriptif bawaan: mean() (rata-rata), median() (nilai tengah), min() (nilai minimum), max() (nilai maksimum), std(), sum(), dan banyak lagi.'
+      }
+    ]
+  },
+  {
+    id: 'visualisasi',
+    name: 'Visualisasi Data',
+    color: '#059669',
+    icon: '📈',
+    questions: [
+      {
+        q: 'Apa perbedaan utama (keunggulan) visual Seaborn dibandingkan Matplotlib secara dasar?',
+        opts: ['Seaborn hanya bisa untuk visualisasi teks, Matplotlib untuk angka.', 'Matplotlib khusus grafik 3D, Seaborn khusus 2D.', 'Seaborn dibangun di atas Matplotlib, menyediakan antarmuka tingkat tinggi untuk grafik statistik yang lebih bagus dengan kode lebih ringkas.', 'Matplotlib dikembangkan oleh Google, Seaborn oleh library python.', 'Seaborn dan Matplotlib sama-sama memerlukan library Pandas.'],
+        correct: 2,
+        explanation: 'Seaborn adalah library visualisasi yang dibangun di atas Matplotlib. Seaborn menawarkan API tingkat tinggi yang lebih sederhana, tema default yang lebih estetis, dan fungsi-fungsi khusus untuk visualisasi statistik.'
+      },
+      {
+        q: 'Grafik yang paling ideal di Seaborn untuk melihat distribusi kuartil data numerik sekaligus mendeteksi outlier adalah...',
+        opts: ['sns.lineplot()', 'sns.piechart()', 'sns.boxplot()', 'sns.barplot()', 'sns.countplot()'],
+        correct: 2,
+        explanation: "sns.boxplot() (box-and-whisker plot) menampilkan Q1, median (Q2), Q3, dan whisker (batas normal). Data di luar whisker divisualisasikan sebagai titik individual, sehingga mudah mendeteksi outlier."
+      },
+      {
+        q: "sns.scatterplot(x='Umur', y='Tinggi', data=df) menghasilkan grafik...",
+        opts: ['Line', 'Scatter', 'Bar', 'Histogram', 'Boxplot'],
+        correct: 1,
+        explanation: 'sns.scatterplot() menghasilkan diagram pencar (scatter plot) yang menampilkan hubungan antara dua variabel numerik. Setiap baris data direpresentasikan sebagai sebuah titik pada bidang kartesius.'
+      },
+      {
+        q: 'Fungsi plt.subplots() digunakan untuk...',
+        opts: ['Menggabungkan dua dataset berbeda sebelum divisualisasikan.', 'Membuat kerangka figure utama beserta satu atau beberapa grid axes untuk menampilkan banyak grafik dalam satu jendela.', 'Membuat plot yang membandingkan nilai positif dan negatif secara simetris.', 'Memotong gambar grafik menjadi ukuran lebih kecil.', 'Menyembunyikan sumbu X dan Y dari sebuah grafik.'],
+        correct: 1,
+        explanation: 'plt.subplots() membuat Figure dan satu atau lebih Axes sekaligus. Dengan plt.subplots(2, 3) misalnya, kamu bisa menampilkan 6 grafik dalam layout grid 2 baris x 3 kolom dalam satu jendela.'
+      },
+      {
+        q: 'Manakah pernyataan yang benar mengenai Grafik Batang (Bar Chart)?',
+        opts: ['Digunakan untuk melihat proporsi dari satu kesatuan.', 'Hanya boleh digambar secara vertikal.', 'Sangat efektif untuk membandingkan nilai antar kategori yang berbeda.', 'Digunakan untuk data lokasi geografis.'],
+        correct: 2,
+        explanation: 'Bar chart sangat efektif untuk membandingkan nilai (kuantitatif) di antara kategori-kategori yang berbeda (kualitatif). Panjang bar merepresentasikan nilai, memudahkan perbandingan visual.'
+      },
+      {
+        q: 'Perintah menampilkan grafik Matplotlib adalah...',
+        opts: ['plt.visible()', 'plt.display()', 'plt.open()', 'plt.print()', 'plt.show()'],
+        correct: 4,
+        explanation: 'plt.show() adalah perintah untuk merender dan menampilkan grafik Matplotlib yang telah dibuat. Tanpa perintah ini, grafik tidak akan muncul (terutama di script Python biasa di luar Jupyter).'
+      },
+      {
+        q: "Apa fungsi utama dari 'Legend' (Legenda) pada sebuah grafik?",
+        opts: ['Judul utama grafik.', 'Menampilkan sumber data.', 'Menjelaskan arti dari warna, simbol, atau pola yang digunakan dalam grafik.', 'Sebagai hiasan agar grafik terlihat artistik.'],
+        correct: 2,
+        explanation: 'Legenda (legend) adalah kunci yang menjelaskan makna dari setiap elemen visual dalam grafik: warna, simbol, pola, atau garis. Ini penting agar pembaca bisa menginterpretasikan grafik dengan benar.'
+      },
+      {
+        q: 'Untuk memberikan keterangan nama atau label pada sumbu X di Matplotlib, fungsi yang dipanggil adalah...',
+        opts: ['plt.xlabel()', 'plt.xname()', 'plt.label_x()', 'plt.xaxis()', 'plt.x_text()'],
+        correct: 0,
+        explanation: "plt.xlabel('teks') menambahkan label teks pada sumbu horizontal (X). Pasangannya adalah plt.ylabel() untuk sumbu vertikal (Y), dan plt.title() untuk judul grafik."
+      },
+      {
+        q: 'Sintaks dasar untuk membuat grafik garis (line chart) dari data sumbu X dan Y di Matplotlib adalah...',
+        opts: ['plt.line(x, y)', 'plt.graph(x, y)', 'plt.plot(x, y)', 'plt.draw(x, y)', 'plt.scatter(x, y)'],
+        correct: 2,
+        explanation: "plt.plot(x, y) adalah fungsi dasar Matplotlib untuk membuat grafik garis. Fungsi ini sangat fleksibel — dengan parameter tambahan seperti 'o' atau 'r--' kamu bisa mengubah gaya garis dan marker."
+      },
+      {
+        q: 'Untuk mengatur ukuran kanvas grafik di Matplotlib, fungsi dan parameternya adalah...',
+        opts: ['plt.size(10, 6)', 'plt.set_dimensions(10, 6)', 'plt.figure(figsize=(10, 6))', 'plt.window(10, 6)', 'plt.plot(size=(10, 6))'],
+        correct: 2,
+        explanation: 'plt.figure(figsize=(lebar, tinggi)) membuat Figure baru dengan ukuran yang ditentukan dalam satuan inch. Misalnya figsize=(10, 6) membuat kanvas 10 inch lebar dan 6 inch tinggi.'
+      },
+      {
+        q: 'Di Seaborn, fungsi yang tepat untuk membuat grafik batang yang otomatis menghitung frekuensi kemunculan setiap kategori adalah...',
+        opts: ['sns.catcount()', 'sns.histplot()', 'sns.countplot()', 'sns.barchart()', 'sns.barplot()'],
+        correct: 2,
+        explanation: 'sns.countplot() menghitung dan memvisualisasikan frekuensi kemunculan tiap kategori secara otomatis — mirip dengan value_counts() namun langsung dalam bentuk grafik batang, tanpa perlu agregasi manual.'
+      },
+      {
+        q: 'Manakah yang merupakan kelemahan penggunaan Diagram Lingkaran (Pie Chart)?',
+        opts: ['Sangat bagus untuk data time series.', 'Sulit dibaca jika terdapat terlalu banyak kategori (irisan) yang kecil-kecil.', 'Hanya bisa menggunakan warna hitam putih.', 'Tidak bisa menunjukkan persentase.'],
+        correct: 1,
+        explanation: 'Kelemahan utama pie chart adalah keterbacaannya ketika memiliki terlalu banyak irisan kecil — mata manusia sulit membandingkan ukuran sudut. Bar chart biasanya lebih efektif untuk kasus tersebut.'
+      },
+      {
+        q: "Apa yang dimaksud dengan 'Korelasi tidak menyiratkan Kausalitas'?",
+        opts: ['Data yang tidak berhubungan pasti salah.', 'Analisis data tidak pernah bisa membuktikan apa pun.', 'Hanya karena dua variabel bergerak bersamaan, belum tentu satu menyebabkan yang lainnya.', 'Jika dua data berhubungan, pasti salah satu menyebabkan yang lain.'],
+        correct: 2,
+        explanation: 'Correlation does not imply causation adalah prinsip fundamental statistik. Contoh: es krim yang terjual lebih banyak berkorelasi dengan meningkatnya kasus tenggelam, tapi bukan es krim yang menyebabkannya — keduanya disebabkan oleh musim panas.'
+      }
+    ]
+  },
+  {
+    id: 'konten-ai',
+    name: 'AI & Konten Digital',
+    color: '#dc2626',
+    icon: '🎬',
+    questions: [
+      {
+        q: 'Konten digital yang secara primer bertujuan untuk memberikan informasi, pembelajaran, atau panduan how-to disebut konten…',
+        opts: ['Konten untuk promosi barang/jasa', 'Konten Reaction atau tanggapan terhadap konten pihak lain', 'Tutorial/edu-content', 'Konten berbasis prank atau lelucon', 'Konten Reupload dari sumber lain'],
+        correct: 2,
+        explanation: 'Tutorial/edu-content adalah jenis konten yang dirancang untuk mendidik atau mengajarkan sesuatu kepada penonton, seperti tutorial software, kursus online, atau panduan step-by-step.'
+      },
+      {
+        q: 'AI content generator (seperti ChatGPT atau Gemini) paling efektif digunakan pada tahapan produksi konten yang mana?',
+        opts: ['Distribusi konten ke berbagai platform', 'Pra-produksi/Perencanaan, terutama untuk brainstorming ide dan drafting script', 'Perekaman audio dan pengambilan gambar utama', 'Final rendering dan kompresi file', 'Perancangan, produksi, penayangan'],
+        correct: 1,
+        explanation: 'AI generatif paling efektif di tahap pra-produksi: membantu brainstorming ide konten, membuat outline, drafting script, riset topik, hingga membuat variasi judul. Ini mempercepat tahap perencanaan secara signifikan.'
+      },
+      {
+        q: 'Fungsi utama dari Mixer Audio dalam post-production adalah…',
+        opts: ['Memotong (trimming) klip video', 'Menggabungkan berbagai track suara, menyeimbangkan volume, dan mengatur panning', 'Mengedit warna dan pencahayaan video', 'Menggabungkan berbagai video', 'Merekam tampilan layar (screen recording)'],
+        correct: 1,
+        explanation: 'Audio mixer dalam post-production berfungsi untuk mixing audio: menggabungkan track musik, narasi, sound effect; mengatur level volume agar seimbang; dan mengatur panning (posisi suara di stereo field kiri-kanan).'
+      },
+      {
+        q: 'Istilah engagement dalam konteks konten digital merujuk pada…',
+        opts: ['Kualitas koneksi internet saat menonton', 'Tingkat interaksi penonton (Like, Comment, Share, Save)', 'Kecepatan upload konten ke platform', 'Jumlah total video yang diproduksi', 'Warna dominan yang digunakan dalam konten'],
+        correct: 1,
+        explanation: 'Engagement adalah metrik yang mengukur seberapa aktif audiens berinteraksi dengan konten: like, komentar, share, save, dan klik. Engagement rate yang tinggi menandakan konten relevan dan resonan dengan audiens.'
+      },
+      {
+        q: 'Ketika seorang content creator menggunakan layanan AI Text-to-Speech (TTS) untuk narasi videonya, fokus kualitas yang harus dioptimalkan adalah…',
+        opts: ['Ukuran font yang digunakan', 'Resolusi gambar background', 'Kecepatan rendering video', 'Kevokalan (infleksi), naturalitas intonasi, dan kejelasan pengucapan', 'Tingkat kompresi file MP4'],
+        correct: 3,
+        explanation: 'Untuk AI TTS yang digunakan sebagai narasi, yang terpenting adalah kualitas audio: infleksi natural (penekanan kata yang tepat), intonasi yang tidak monoton, dan kejelasan pengucapan agar mudah dipahami pendengar.'
+      }
+    ]
+  },
+  {
+    id: 'prompting',
+    name: 'Prompt Engineering',
+    color: '#d97706',
+    icon: '💬',
+    questions: [
+      {
+        q: 'Prompt untuk meminta penjelasan yang sangat sederhana adalah:',
+        opts: ['"Jelaskan dengan contoh."', '"Jelaskan dengan singkat."', '"Singkat saja."', '"Tanpa contoh."', '"Jelaskan seperti saya masih SMP."'],
+        correct: 4,
+        explanation: '"Jelaskan seperti saya masih SMP" atau "Explain Like I\'m 5 (ELI5)" adalah teknik prompting yang efektif untuk meminta AI menyederhanakan konsep kompleks menggunakan bahasa dan analogi yang mudah dipahami.'
+      },
+      {
+        q: 'Prompt untuk meminta AI membuat unit testing adalah:',
+        opts: ['"Analisis code berikut."', '"Cari bug di code berikut."', '"Test dong aplikasi ini."', '"Coba apakah ada error code ini."', '"Buatkan unit test untuk fungsi berikut menggunakan pytest."'],
+        correct: 4,
+        explanation: '"Buatkan unit test untuk fungsi berikut menggunakan pytest" adalah prompt yang spesifik dan actionable: menyebutkan tujuan (unit test), subjek (fungsi berikut), dan framework yang digunakan (pytest).'
+      },
+      {
+        q: 'Perintah untuk AI agar menjawab dalam format tabel, daftar, atau bullet points disebut teknik…',
+        opts: ['Debugging', 'Cleaning data', 'Style prompting', 'Output formatting', 'Compressing'],
+        correct: 3,
+        explanation: 'Output formatting adalah teknik prompting di mana kita secara eksplisit menentukan format output yang diinginkan, seperti "jawab dalam tabel", "buat dalam daftar bernomor", atau "format sebagai JSON".'
+      },
+      {
+        q: 'Prompt yang buruk biasanya disebabkan oleh…',
+        opts: ['Bahasa jelas', 'Tujuan tugas spesifik', 'Contoh jelas', 'Format terstruktur', 'Instruksi terlalu umum dan panjang'],
+        correct: 4,
+        explanation: 'Prompt yang buruk umumnya terlalu ambigu, terlalu umum, atau tidak terstruktur. AI membutuhkan konteks, tujuan, dan batasan yang jelas untuk menghasilkan output yang relevan dan berkualitas.'
+      },
+      {
+        q: 'Prompt untuk meminta flowchart dalam format teks adalah:',
+        opts: ['"Buat flowchart dalam format teks menggunakan simbol standar."', '"Flowchart dong dengan singkat."', '"Gimana flow yang benar?"', '"Tentukan diagram yang benar."', '"Bikin alur dengan tahapan yang benar."'],
+        correct: 0,
+        explanation: '"Buat flowchart dalam format teks menggunakan simbol standar" adalah prompt yang tepat karena spesifik tentang format output (teks, bukan gambar) dan menggunakan terminologi yang benar (simbol standar flowchart).'
+      }
+    ]
+  }
+];
+
+// ===================== APP STATE =====================
+
+const LETTERS = ['A','B','C','D','E','F'];
+let state = {
+  screen: 'category',
+  selectedCats: [],
+  questions: [],
+  currentIdx: 0,
+  answers: []
+};
+
+// ===================== RENDER CATEGORIES =====================
+
+function renderCategories() {
+  const grid = document.getElementById('cat-grid');
+  grid.innerHTML = CATEGORIES.map(cat => {
+    const isSelected = state.selectedCats.includes(cat.id);
+    return `
+      <div class="cat-card ${isSelected ? 'selected' : ''}" onclick="toggleCat('${cat.id}')" role="button" tabindex="0">
+        <div class="cat-check">
+          <svg width="11" height="11" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div class="cat-icon" style="background:${cat.color}18; color:${cat.color}">${cat.icon}</div>
+        <div class="cat-name">${cat.name}</div>
+        <div class="cat-count">${cat.questions.length} soal</div>
+      </div>
+    `;
+  }).join('');
+
+  updateStartBtn();
+}
+
+function updateStartBtn() {
+  const totalQ = state.selectedCats.reduce((s, id) => {
+    const c = CATEGORIES.find(x => x.id === id);
+    return s + (c ? c.questions.length : 0);
+  }, 0);
+  const btn = document.getElementById('btn-start');
+  const badge = document.getElementById('total-soal-badge');
+  btn.disabled = state.selectedCats.length === 0;
+  if (totalQ > 0) {
+    badge.style.display = 'inline';
+    badge.textContent = totalQ + ' soal';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+function toggleCat(id) {
+  if (state.selectedCats.includes(id)) {
+    state.selectedCats = state.selectedCats.filter(x => x !== id);
+  } else {
+    state.selectedCats.push(id);
+  }
+  renderCategories();
+}
+
+function selectAll() {
+  if (state.selectedCats.length === CATEGORIES.length) {
+    state.selectedCats = [];
+  } else {
+    state.selectedCats = CATEGORIES.map(c => c.id);
+  }
+  renderCategories();
+}
+
+// ===================== QUIZ LOGIC =====================
+
+function startQuiz() {
+  const allQ = [];
+  state.selectedCats.forEach(id => {
+    const cat = CATEGORIES.find(c => c.id === id);
+    if (cat) cat.questions.forEach(q => allQ.push({ ...q, _cat: cat.name }));
+  });
+  // Shuffle
+  for (let i = allQ.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [allQ[i], allQ[j]] = [allQ[j], allQ[i]];
+  }
+  state.questions = allQ;
+  state.answers = new Array(allQ.length).fill(null);
+  state.currentIdx = 0;
+  showScreen('quiz');
+  renderQuestion();
+}
+
+function exitQuiz() {
+  showScreen('category');
+}
+
+function renderQuestion() {
+  const q = state.questions[state.currentIdx];
+  const ans = state.answers[state.currentIdx];
+  const answered = ans !== null && ans !== undefined;
+
+  // header
+  document.getElementById('quiz-cat-label').textContent = q._cat || '';
+  document.getElementById('quiz-counter').textContent = (state.currentIdx + 1) + '/' + state.questions.length;
+  document.getElementById('progress-fill').style.width = (((state.currentIdx + 1) / state.questions.length) * 100) + '%';
+
+  // live score
+  const correct = state.answers.filter((a, i) => a !== null && a !== undefined && a === state.questions[i].correct).length;
+  const wrong = state.answers.filter((a, i) => a !== null && a !== undefined && a !== state.questions[i].correct).length;
+  const skip = state.questions.length - correct - wrong;
+  document.getElementById('ls-correct').textContent = correct;
+  document.getElementById('ls-wrong').textContent = wrong;
+  document.getElementById('ls-skip').textContent = skip;
+
+  // nav buttons
+  document.getElementById('btn-prev').disabled = state.currentIdx === 0;
+  document.getElementById('btn-prev-mob').disabled = state.currentIdx === 0;
+
+  const isLast = state.currentIdx === state.questions.length - 1;
+  const nextRight = document.getElementById('btn-next-right');
+  const nextMob = document.getElementById('btn-next-mob');
+
+  if (isLast) {
+    nextRight.innerHTML = `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>`;
+    nextMob.innerHTML = `Selesai <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>`;
+  } else {
+    nextRight.innerHTML = `<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>`;
+    nextMob.innerHTML = `Lanjut <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>`;
+  }
+
+  // Disable next if not answered (unless last which should still show finish)
+  nextRight.disabled = !answered;
+  nextMob.disabled = !answered;
+
+  // question card
+  const optionsHTML = q.opts.map((opt, i) => {
+    let cls = '';
+    if (answered) {
+      if (i === q.correct) {
+        cls = ans === q.correct ? 'correct' : 'show-correct';
+      } else if (i === ans) {
+        cls = 'wrong';
+      }
+    }
+    return `
+      <button class="option-btn ${cls}" ${answered ? 'disabled' : ''} onclick="selectAnswer(${i})">
+        <div class="option-letter">${LETTERS[i]}</div>
+        <div class="option-text">${opt}</div>
+      </button>
+    `;
+  }).join('');
+
+  let feedbackHTML = '';
+  if (answered) {
+    const isCorrect = ans === q.correct;
+    feedbackHTML = `
+      <div class="feedback-box ${isCorrect ? 'correct-fb' : 'wrong-fb'}">
+        <div class="feedback-icon">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            ${isCorrect
+              ? '<circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/>'
+              : '<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>'}
+          </svg>
+        </div>
+        <div>
+          <div class="feedback-title">${isCorrect ? 'Benar!' : 'Kurang tepat!'}</div>
+          <div>${q.explanation || ''}</div>
+        </div>
+      </div>
+    `;
+  }
+
+  // dots
+  const dotsHTML = `<div class="score-dots">${state.questions.map((qq, i) => {
+    const a = state.answers[i];
+    let cls = '';
+    if (i === state.currentIdx && (a === null || a === undefined)) cls = 'current';
+    else if (a !== null && a !== undefined && a === qq.correct) cls = 'answered-correct';
+    else if (a !== null && a !== undefined && a !== qq.correct) cls = 'answered-wrong';
+    return `<div class="score-dot ${cls}"></div>`;
+  }).join('')}</div>`;
+
+  document.getElementById('question-card').innerHTML = `
+    <div class="question-num">Soal ${state.currentIdx + 1}</div>
+    <div class="question-text">${q.q}</div>
+    <div class="options-list">${optionsHTML}</div>
+    ${feedbackHTML}
+    ${dotsHTML}
+  `;
+}
+
+function selectAnswer(i) {
+  if (state.answers[state.currentIdx] !== null && state.answers[state.currentIdx] !== undefined) return;
+  state.answers[state.currentIdx] = i;
+  renderQuestion();
+}
+
+function goPrev() {
+  if (state.currentIdx > 0) {
+    state.currentIdx--;
+    renderQuestion();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+}
+
+function goNext() {
+  const isLast = state.currentIdx === state.questions.length - 1;
+  if (isLast) {
+    showResult();
+  } else {
+    state.currentIdx++;
+    renderQuestion();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+}
+
+// ===================== RESULT =====================
+
+function showResult() {
+  const total = state.questions.length;
+  const correct = state.answers.filter((a, i) => a !== null && a !== undefined && a === state.questions[i].correct).length;
+  const wrong = total - correct;
+  const pct = Math.round((correct / total) * 100);
+
+  let label, iconSVG, pctColor;
+  if (pct >= 85) { label = 'Luar Biasa! 🎉'; pctColor = '#16a34a'; iconSVG = `<svg width="34" height="34" fill="none" stroke="#16a34a" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`; }
+  else if (pct >= 70) { label = 'Bagus! Pertahankan 💪'; pctColor = '#16a34a'; iconSVG = `<svg width="34" height="34" fill="none" stroke="#16a34a" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/></svg>`; }
+  else if (pct >= 50) { label = 'Cukup, terus berlatih!'; pctColor = '#d97706'; iconSVG = `<svg width="34" height="34" fill="none" stroke="#d97706" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`; }
+  else { label = 'Perlu lebih banyak belajar'; pctColor = '#dc2626'; iconSVG = `<svg width="34" height="34" fill="none" stroke="#dc2626" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`; }
+
+  const bgIcon = pct >= 70 ? '#f0fdf4' : pct >= 50 ? '#fffbeb' : '#fef2f2';
+
+  document.getElementById('result-card').innerHTML = `
+    <div class="result-icon" style="background:${bgIcon}">${iconSVG}</div>
+    <div class="result-score-big" style="color:${pctColor}">${pct}%</div>
+    <div class="result-label">${label}</div>
+    <div class="result-sub">Kamu menjawab ${correct} dari ${total} soal dengan benar</div>
+    <div class="result-stats">
+      <div class="stat-pill"><span class="stat-val" style="color:var(--correct)">${correct}</span><span class="stat-lbl">Benar</span></div>
+      <div class="stat-pill"><span class="stat-val" style="color:var(--wrong)">${wrong}</span><span class="stat-lbl">Salah</span></div>
+      <div class="stat-pill"><span class="stat-val">${total}</span><span class="stat-lbl">Total Soal</span></div>
+    </div>
+    <div class="result-actions">
+      <button class="btn-primary" onclick="restartQuiz()">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>
+        Ulangi Soal
+      </button>
+      <button class="btn-secondary" onclick="goToCategory()">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Pilih Kategori
+      </button>
+    </div>
+  `;
+
+  const reviewHTML = state.questions.map((q, i) => {
+    const a = state.answers[i];
+    const isCorrect = a === q.correct;
+    const myAns = (a !== null && a !== undefined) ? q.opts[a] : 'Tidak dijawab';
+    const correctAns = q.opts[q.correct];
+    return `
+      <div class="review-item ${isCorrect ? 'r-correct' : 'r-wrong'}">
+        <div class="review-num">${String(i+1).padStart(2,'0')}</div>
+        <div style="flex:1">
+          <div class="review-q">${q.q}</div>
+          <div class="review-ans">
+            Jawabanmu: <span class="${isCorrect ? 'ok' : 'no'}">${myAns}</span>
+            ${!isCorrect ? ` · Jawaban benar: <span class="ok">${correctAns}</span>` : ''}
+          </div>
+        </div>
+        <div style="flex-shrink:0;margin-top:2px">
+          <svg width="16" height="16" fill="none" stroke="${isCorrect ? '#16a34a' : '#dc2626'}" stroke-width="2.5" viewBox="0 0 24 24">
+            ${isCorrect ? '<polyline points="20 6 9 17 4 12"/>' : '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>'}
+          </svg>
+        </div>
+      </div>
+    `;
+  }).join('');
+  document.getElementById('review-list').innerHTML = reviewHTML;
+
+  showScreen('result');
+}
+
+function restartQuiz() {
+  // reshuffle same questions
+  const arr = [...state.questions];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  state.questions = arr;
+  state.answers = new Array(arr.length).fill(null);
+  state.currentIdx = 0;
+  showScreen('quiz');
+  renderQuestion();
+  window.scrollTo({ top: 0 });
+}
+
+function goToCategory() {
+  state.selectedCats = [];
+  showScreen('category');
+  renderCategories();
+}
+
+// ===================== SCREEN SWITCHING =====================
+
+function showScreen(name) {
+  state.screen = name;
+  document.getElementById('screen-category').style.display = name === 'category' ? '' : 'none';
+  document.getElementById('screen-quiz').style.display = name === 'quiz' ? '' : 'none';
+  document.getElementById('screen-result').style.display = name === 'result' ? '' : 'none';
+  document.getElementById('quiz-nav-bottom').style.display = name === 'quiz' ? 'flex' : 'none';
+
+  // header subtitle
+  const sub = document.getElementById('header-subtitle');
+  const badge = document.getElementById('header-badge');
+  if (name === 'quiz') {
+    sub.textContent = 'RPL · Genap 2026 · Quiz sedang berjalan';
+    badge.textContent = 'QUIZ';
+  } else if (name === 'result') {
+    sub.textContent = 'RPL · Genap 2026 · Hasil';
+    badge.textContent = 'SELESAI';
+  } else {
+    sub.textContent = 'RPL · Genap 2026 · Pilih kategori untuk mulai';
+    badge.textContent = 'QUIZ';
+  }
+
+  // animate
+  const el = document.getElementById('screen-' + name);
+  el.style.animation = 'none';
+  el.offsetHeight; // reflow
+  el.style.animation = 'fadeIn 0.28s ease';
+}
+
+// ===================== INIT =====================
+
+renderCategories();
+</script>
+</body>
+</html>
